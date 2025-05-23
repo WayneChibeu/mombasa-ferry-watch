@@ -1,11 +1,35 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import FerryStatus from '@/components/FerryStatus';
+import ReportForm from '@/components/ReportForm';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            FerryGo
+          </h1>
+          <p className="text-gray-600">
+            Real-time Mombasa ferry status updates
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Current Status
+            </h2>
+            <FerryStatus />
+          </div>
+          
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Submit Report
+            </h2>
+            <ReportForm />
+          </div>
+        </div>
       </div>
     </div>
   );

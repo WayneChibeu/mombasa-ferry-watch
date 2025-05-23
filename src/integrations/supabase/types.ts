@@ -9,7 +9,129 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      alternative_routes: {
+        Row: {
+          active: boolean | null
+          cost: number | null
+          description: string
+          estimated_time: number
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          cost?: number | null
+          description: string
+          estimated_time: number
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          cost?: number | null
+          description?: string
+          estimated_time?: number
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      operational_status: {
+        Row: {
+          crowd_level: string | null
+          current_wait_time: number | null
+          health_status: string | null
+          last_departure: string | null
+          location: string
+          next_estimated: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          crowd_level?: string | null
+          current_wait_time?: number | null
+          health_status?: string | null
+          last_departure?: string | null
+          location: string
+          next_estimated?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          crowd_level?: string | null
+          current_wait_time?: number | null
+          health_status?: string | null
+          last_departure?: string | null
+          location?: string
+          next_estimated?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          breakdown_detected: boolean | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          location: string
+          message: string
+          phone: string
+          processed_at: string | null
+        }
+        Insert: {
+          breakdown_detected?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          location: string
+          message: string
+          phone: string
+          processed_at?: string | null
+        }
+        Update: {
+          breakdown_detected?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          location?: string
+          message?: string
+          phone?: string
+          processed_at?: string | null
+        }
+        Relationships: []
+      }
+      wait_estimates: {
+        Row: {
+          created_at: string | null
+          crowd_level: string | null
+          estimated_wait_max: number
+          estimated_wait_min: number
+          id: string
+          location: string
+          report_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          crowd_level?: string | null
+          estimated_wait_max: number
+          estimated_wait_min: number
+          id?: string
+          location: string
+          report_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          crowd_level?: string | null
+          estimated_wait_max?: number
+          estimated_wait_min?: number
+          id?: string
+          location?: string
+          report_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,0 +1,94 @@
+
+{
+  "breakdown_detection": {
+    "task": "Classify ferry status from commuter SMS",
+    "input": "{user_message}",
+    "context": "Mombasa ferry service between Likoni and Mtongwe",
+    "rules": {
+      "breakdown_keywords": [
+        "broken", "stuck", "not moving", "mechanical", "engine", "fault",
+        "breakdown", "repair", "maintenance", "stopped", "dead", "kaput",
+        "imesimama", "imeharibika", "hawaitembei"
+      ],
+      "operational_keywords": [
+        "running", "working", "moving", "operating", "normal", "fine",
+        "inafanya kazi", "inatembea", "sawa"
+      ],
+      "delay_keywords": [
+        "slow", "delayed", "late", "waiting", "queue", "long line",
+        "chelewa", "subiri", "foleni"
+      ],
+      "confidence_calculation": "Based on keyword matches and message clarity",
+      "alternative_routes": "Suggest Dongo Kundu Bridge if breakdown confirmed"
+    },
+    "output_format": {
+      "is_breakdown": "boolean",
+      "confidence": "decimal 0-1",
+      "status": "operational|delayed|broken",
+      "alternative_routes": "string or null",
+      "reasoning": "brief explanation"
+    },
+    "examples": {
+      "breakdown_case": {
+        "input": "Ferry imesimama, engine problem",
+        "output": {
+          "is_breakdown": true,
+          "confidence": 0.9,
+          "status": "broken",
+          "alternative_routes": "Dongo Kundu Bridge (30 mins, KSh 150)",
+          "reasoning": "Clear mechanical issue indicated"
+        }
+      },
+      "delay_case": {
+        "input": "Very long queue today, been waiting 45 minutes",
+        "output": {
+          "is_breakdown": false,
+          "confidence": 0.8,
+          "status": "delayed",
+          "alternative_routes": null,
+          "reasoning": "Operational but experiencing delays"
+        }
+      }
+    }
+  },
+  "eta_prediction": {
+    "task": "Estimate wait time from crowd reports",
+    "input": "array of recent SMS reports",
+    "context": "Historical patterns and current conditions",
+    "rules": {
+      "crowd_indicators": {
+        "high": ["packed", "full", "long queue", "many people", "crowded", "wengi sana"],
+        "medium": ["some queue", "moderate", "normal crowd", "kawaida"],
+        "low": ["empty", "few people", "no queue", "wachache", "tupu"]
+      },
+      "time_extraction": "Parse mentions of wait times in messages",
+      "peak_hours": ["07:00-09:00", "17:00-19:00"],
+      "estimation_logic": "Weight recent reports higher, consider time of day"
+    },
+    "output_format": {
+      "estimated_wait_min": "integer minutes",
+      "estimated_wait_max": "integer minutes", 
+      "crowd_level": "low|medium|high",
+      "next_peak": "time range or null",
+      "confidence": "decimal 0-1",
+      "data_points": "number of reports used"
+    },
+    "examples": {
+      "high_traffic": {
+        "input": [
+          "Queue to gate C very long (reported 5 mins ago)",
+          "Boarded after 40 mins wait (reported 12 mins ago)", 
+          "Still many people waiting (reported 2 mins ago)"
+        ],
+        "output": {
+          "estimated_wait_min": 35,
+          "estimated_wait_max": 45,
+          "crowd_level": "high",
+          "next_peak": "17:00-19:00",
+          "confidence": 0.8,
+          "data_points": 3
+        }
+      }
+    }
+  }
+}
