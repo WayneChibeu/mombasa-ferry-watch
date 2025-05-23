@@ -1,6 +1,7 @@
 
 import FerryStatus from '@/components/FerryStatus';
 import ReportForm from '@/components/ReportForm';
+import SMSTestPanel from '@/components/SMSTestPanel';
 
 const Index = () => {
   return (
@@ -15,7 +16,7 @@ const Index = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-8">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Current Status
@@ -29,6 +30,13 @@ const Index = () => {
             </h2>
             <ReportForm />
           </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            SMS Processing Test
+          </h2>
+          <SMSTestPanel />
         </div>
       </div>
     </div>
