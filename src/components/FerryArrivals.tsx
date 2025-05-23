@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Ferry } from 'lucide-react';
+import { Clock, Ship } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { OperationalStatus } from '@/types/ferry';
 
@@ -98,7 +97,7 @@ const FerryArrivals: React.FC = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Ferry className="h-5 w-5" />
+          <Ship className="h-5 w-5" />
           Ferry Arrival Times
         </CardTitle>
         <p className="text-sm text-gray-600">
