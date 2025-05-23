@@ -1,5 +1,5 @@
 import express from 'express';
-import ferryRoutes from './routes/ferry';
+import ferryRoutes from './routes/ferry.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
