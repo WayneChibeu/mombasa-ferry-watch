@@ -51,17 +51,18 @@ const ReportForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('reports')
-        .insert({
+      // Process the SMS through our edge function to analyze it and update status
+      const { data, error } = await supabase.functions.invoke('process-sms', {
+        body: {
           phone: phone.trim(),
           message: message.trim(),
           location: location as 'likoni' | 'mtongwe'
-        });
+        }
+      });
 
       if (error) throw error;
 
-      toast.success('Report submitted successfully');
+      toast.success(`Report submitted successfully! Status analyzed as: ${data.analysis?.status || 'unknown'}`);
       setPhone('');
       setMessage('');
       setLocation('');
@@ -77,6 +78,9 @@ const ReportForm: React.FC = () => {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Report Ferry Status</CardTitle>
+        <p className="text-sm text-gray-600">
+          Submit real-time status updates from the ferry terminals
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,13 +122,13 @@ const ReportForm: React.FC = () => {
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe the current ferry situation..."
+              placeholder="e.g., 'Ferry stuck at dock, engine problem' or 'Long queue, 30 min wait'"
               rows={3}
               maxLength={500}
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              {message.length}/500 characters
+              {message.length}/500 characters • Your report will be analyzed automatically
             </p>
           </div>
 
@@ -133,7 +137,7 @@ const ReportForm: React.FC = () => {
             disabled={isSubmitting}
             className="w-full"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            {isSubmitting ? 'Analyzing & Submitting...' : 'Submit Report'}
           </Button>
         </form>
       </CardContent>

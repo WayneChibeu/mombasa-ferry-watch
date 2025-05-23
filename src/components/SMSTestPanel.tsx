@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { AlertCircle, Brain, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const SMSTestPanel: React.FC = () => {
@@ -16,11 +17,11 @@ const SMSTestPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const testMessages = [
-    { text: 'Ferry imesimama, engine problem', type: 'Breakdown' },
-    { text: 'Very long queue, waiting 45 minutes', type: 'Delay' },
-    { text: 'Ferry working normally today', type: 'Operational' },
-    { text: 'Stuck at the dock, not moving', type: 'Breakdown' },
-    { text: 'Foleni ndefu sana leo', type: 'Delay (Swahili)' }
+    { text: 'Ferry imesimama, engine problem', type: 'Breakdown', description: 'Tests breakdown detection' },
+    { text: 'Very long queue, waiting 45 minutes', type: 'Delay', description: 'Tests delay detection' },
+    { text: 'Ferry working normally today', type: 'Operational', description: 'Tests normal status' },
+    { text: 'Stuck at the dock, not moving', type: 'Breakdown', description: 'Tests mechanical issues' },
+    { text: 'Foleni ndefu sana leo, subiri 30 dakika', type: 'Delay (Swahili)', description: 'Tests Swahili analysis' }
   ];
 
   const testSMSProcessing = async () => {
@@ -53,10 +54,17 @@ const SMSTestPanel: React.FC = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>SMS Processing Test Panel</CardTitle>
-        <p className="text-sm text-gray-600">
-          Test the SMS analysis without needing real SMS integration
-        </p>
+        <CardTitle className="flex items-center gap-2">
+          <Brain className="h-5 w-5" />
+          AI SMS Analysis Simulator
+        </CardTitle>
+        <div className="flex items-start gap-2 text-sm text-gray-600">
+          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium">What this does:</p>
+            <p>This simulates how our AI processes SMS reports from ferry users to automatically detect breakdowns, delays, and update status. In reality, users would send SMS to a short code, but this lets you test the analysis without SMS integration.</p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,27 +91,31 @@ const SMSTestPanel: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Test Message</label>
+          <label className="block text-sm font-medium mb-1 flex items-center gap-1">
+            <MessageSquare className="h-4 w-4" />
+            Test Message
+          </label>
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Enter SMS message to test..."
+            placeholder="Enter SMS message to test AI analysis..."
             rows={3}
           />
         </div>
 
         <div>
-          <p className="text-sm font-medium mb-2">Quick Test Messages:</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-sm font-medium mb-2">Quick Test Examples:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {testMessages.map((test, index) => (
               <Button
                 key={index}
                 variant="outline"
                 size="sm"
                 onClick={() => useTestMessage(test.text)}
-                className="text-xs"
+                className="text-xs text-left h-auto p-3 flex flex-col items-start"
               >
-                {test.type}
+                <span className="font-medium">{test.type}</span>
+                <span className="text-gray-500 text-xs">{test.description}</span>
               </Button>
             ))}
           </div>
@@ -114,12 +126,15 @@ const SMSTestPanel: React.FC = () => {
           disabled={loading || !message.trim()}
           className="w-full"
         >
-          {loading ? 'Processing...' : 'Test SMS Analysis'}
+          {loading ? 'AI Analyzing Message...' : 'Test AI Analysis'}
         </Button>
 
         {result && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium mb-2">Analysis Result:</h4>
+            <h4 className="font-medium mb-2 flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              AI Analysis Result:
+            </h4>
             {result.error ? (
               <div className="text-red-600">{result.error}</div>
             ) : (
@@ -154,6 +169,12 @@ const SMSTestPanel: React.FC = () => {
                     <span className="ml-2 text-blue-600">{result.analysis.alternative_routes}</span>
                   </div>
                 )}
+                <div className="mt-3 p-2 bg-blue-50 rounded text-sm">
+                  <span className="font-medium text-blue-800">Impact:</span>
+                  <span className="text-blue-700 ml-1">
+                    This analysis {result.analysis?.is_breakdown ? 'will update the operational status to broken' : 'was recorded but status remains unchanged'}
+                  </span>
+                </div>
               </div>
             )}
           </div>
