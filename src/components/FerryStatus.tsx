@@ -23,7 +23,7 @@ const FerryStatus: React.FC = () => {
         .select('*');
       
       if (error) throw error;
-      setStatuses(data || []);
+      setStatuses((data || []) as OperationalStatus[]);
     } catch (error) {
       console.error('Error fetching status:', error);
     }
@@ -38,7 +38,7 @@ const FerryStatus: React.FC = () => {
         .limit(2);
       
       if (error) throw error;
-      setWaitEstimates(data || []);
+      setWaitEstimates((data || []) as WaitEstimate[]);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching wait estimates:', error);
