@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Ship, Users, Hourglass, AlertTriangle } from 'lucide-react';
+import { Clock, Ship, Users, Hourglass, AlertTriangle, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { OperationalStatus } from '@/types/ferry';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { toast } from "@/hooks/use-toast";
 
 const FerryArrivals: React.FC = () => {
   const [statuses, setStatuses] = useState<OperationalStatus[]>([]);
@@ -38,9 +40,15 @@ const FerryArrivals: React.FC = () => {
       if (error) throw error;
       setStatuses((data || []) as OperationalStatus[]);
       setLoading(false);
+      
     } catch (error) {
       console.error('Error fetching status:', error);
       setLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch ferry status information"
+      });
     } finally {
       setRefreshing(false);
     }
@@ -89,32 +97,40 @@ const FerryArrivals: React.FC = () => {
     }
   };
 
-  const getCrowdLevelIcon = (level: string | null | undefined) => {
-    if (!level) return null;
+  // Returns recommended queue line based on passenger type and crowd level
+  const getRecommendedQueueLine = (crowdLevel: string | null | undefined, location: string): React.ReactNode => {
+    if (!crowdLevel) return null;
     
-    switch (level) {
-      case 'low':
-        return <Users className="h-4 w-4 text-green-500" />;
-      case 'medium':
-        return <Users className="h-4 w-4 text-yellow-500" />;
-      case 'high':
-        return <Users className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getCrowdLevelText = (level: string | null | undefined): string => {
-    switch (level) {
-      case 'low':
-        return 'Light queue (< 5 min)';
-      case 'medium':
-        return 'Moderate queue (5-15 min)';
-      case 'high':
-        return 'Heavy queue (> 15 min)';
-      default:
-        return 'Queue status unknown';
-    }
+    return (
+      <div className="mt-3 space-y-2">
+        <h4 className="text-sm font-medium">Recommended Queue Lines:</h4>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 text-sm">
+            <Badge className="bg-blue-100 text-blue-800">Families</Badge>
+            <ArrowRight size={12} />
+            <span>{location === 'likoni' ? 'Center' : 'North'} Gate {crowdLevel === 'high' ? '(20+ min)' : '(5-10 min)'}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 text-sm">
+            <Badge className="bg-purple-100 text-purple-800">Elderly/PWD</Badge>
+            <ArrowRight size={12} />
+            <span>Priority Lane {crowdLevel === 'high' ? '(10 min)' : '(2-5 min)'}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 text-sm">
+            <Badge className="bg-green-100 text-green-800">Commuters</Badge>
+            <ArrowRight size={12} />
+            <span>{location === 'likoni' ? 'South' : 'Express'} Gate {crowdLevel === 'high' ? '(25+ min)' : '(10-15 min)'}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 rounded-md border bg-gray-50 p-2 text-sm">
+            <Badge className="bg-amber-100 text-amber-800">Vehicles</Badge>
+            <ArrowRight size={12} />
+            <span>Vehicle Ramp {crowdLevel === 'high' ? '(45+ min)' : '(20-30 min)'}</span>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleRefresh = () => {
@@ -162,6 +178,11 @@ const FerryArrivals: React.FC = () => {
         ) : statuses.map((status) => {
           const arrivalStatus = getArrivalStatus(status.next_estimated, status.health_status || 'unknown');
           const timeUntil = calculateTimeUntilArrival(status.next_estimated);
+          const progressValue = status.next_estimated 
+            ? Math.max(5, Math.min(100, 
+                ((30 - Math.floor((new Date(status.next_estimated).getTime() - currentTime.getTime()) / 60000)) / 30) * 100
+              )) 
+            : 0;
           
           return (
             <div key={status.location} className="border rounded-lg p-4 space-y-3">
@@ -175,12 +196,6 @@ const FerryArrivals: React.FC = () => {
                      arrivalStatus === 'delayed' ? 'Delayed' :
                      arrivalStatus === 'broken' ? 'Out of Service' : 'Status Unknown'}
                   </Badge>
-                </div>
-                <div className="flex items-center gap-1 text-right">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">
-                    {currentTime.toLocaleTimeString()}
-                  </span>
                 </div>
               </div>
               
@@ -202,66 +217,28 @@ const FerryArrivals: React.FC = () => {
                   <p className="text-sm font-medium text-gray-700 flex items-center gap-1">
                     <Users className="h-4 w-4" /> Current Queue:
                   </p>
-                  <div className="flex flex-col">
-                    <p className="text-lg font-bold text-blue-600">
-                      {status.current_wait_time ? `${status.current_wait_time} min wait` : 'No wait time data'}
-                    </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getCrowdLevelIcon(status.crowd_level)}
-                      <span className="text-xs text-gray-600">
-                        {getCrowdLevelText(status.crowd_level)}
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-lg font-bold text-blue-600">
+                    {status.current_wait_time ? `${status.current_wait_time} min wait` : 'No wait time data'}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {status.crowd_level === 'low' ? 'Light crowds (< 5 min)' : 
+                    status.crowd_level === 'medium' ? 'Moderate crowds (5-15 min)' :
+                    status.crowd_level === 'high' ? 'Heavy crowds (> 15 min)' : 'Crowd status unknown'}
+                  </p>
                 </div>
               </div>
               
               {status.next_estimated && (
-                <div className="mt-2">
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-1 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${
-                        arrivalStatus === 'arriving' ? 'bg-green-500' : 
-                        arrivalStatus === 'delayed' ? 'bg-yellow-500' : 
-                        'bg-blue-500'
-                      }`}
-                      style={{ 
-                        width: `${Math.min(100, Math.max(5, calculateTimeProgressBar(status.next_estimated)))}%` 
-                      }}
-                    ></div>
+                <div>
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Now</span>
+                    <span>Expected: {new Date(status.next_estimated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Expected at: {new Date(status.next_estimated).toLocaleTimeString()}
-                  </p>
+                  <Progress value={progressValue} className="h-2" />
                 </div>
               )}
               
-              {status.crowd_level && (
-                <div className="border-t pt-2 mt-1">
-                  <h4 className="text-sm font-medium mb-1">Queue Information:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className={
-                      status.crowd_level === 'low' ? 'bg-green-100 text-green-800' :
-                      status.crowd_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }>
-                      {status.crowd_level} crowd level
-                    </Badge>
-                    
-                    {status.crowd_level === 'high' && (
-                      <Badge variant="outline" className="text-gray-800 border-gray-300">
-                        Consider alternative routes
-                      </Badge>
-                    )}
-                    
-                    {status.health_status === 'operational' && status.crowd_level !== 'high' && (
-                      <Badge variant="outline" className="text-green-800 border-green-300">
-                        Good time to travel
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
+              {getRecommendedQueueLine(status.crowd_level, status.location)}
             </div>
           );
         })}
@@ -272,20 +249,6 @@ const FerryArrivals: React.FC = () => {
       </CardContent>
     </Card>
   );
-};
-
-// Helper function to calculate progress bar percentage for arrival
-const calculateTimeProgressBar = (estimatedTime: string): number => {
-  const now = new Date();
-  const estimated = new Date(estimatedTime);
-  const diffMs = estimated.getTime() - now.getTime();
-  const diffMinutes = diffMs / (1000 * 60);
-  
-  // If arriving in less than 30 minutes, show progress relative to 30 min
-  if (diffMinutes <= 30) {
-    return ((30 - diffMinutes) / 30) * 100;
-  }
-  return 0; // Just starting the progress for longer times
 };
 
 export default FerryArrivals;
