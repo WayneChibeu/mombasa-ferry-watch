@@ -1,7 +1,6 @@
-import * as express from 'express';
-import { rateLimit } from 'express-rate-limit';
+import express from 'express';
 import * as jwt from 'jsonwebtoken';
-import { loginCaptain } from '../auth/captainAuth';
+import { loginCaptain } from '../auth/captainAuth.js';
 
 // Extend Express Request interface to include 'captain'
 declare global {
@@ -14,34 +13,51 @@ declare global {
 
 const router = express.Router();
 
-const updateRateLimiter = rateLimit({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 10, // Limit each captain to 10 requests per window
-    message: 'Too many updates submitted, please try again later'
+// Dummy rate limiter middleware (replace with real implementation if available)
+const updateRateLimiter = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Example: Allow all requests (no actual rate limiting)
+    next();
+};
+
+// Debug middleware
+router.use((req, res, next) => {
+    console.log('\n=== 🔍 Request Debug ===');
+    console.log('Method:', req.method);
+    console.log('Path:', req.path);
+    console.log('Headers:', {
+        auth: req.headers.authorization,
+        contentType: req.headers['content-type']
+    });
+    console.log('Body:', req.body);
+    console.log('=== Debug End ===\n');
+    next();
 });
 
+// Authentication middleware
 const authenticateCaptain = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
-    const token = req.headers.authorization?.split(' ')[1];
+    console.log('\n=== 🔐 Auth Check ===');
     
-    if (!token) {
-        res.status(401).json({ error: 'No authentication token provided' });
+    if (!req.headers.authorization?.startsWith('Bearer ')) {
+        console.log('❌ Missing Bearer prefix');
+        res.status(401).json({ error: 'Invalid authorization format' });
         return;
     }
-
+    
+    const token = req.headers.authorization.split(' ')[1];
+    console.log('Token received:', token.substring(0, 20) + '...');
+    
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-        if (typeof decoded !== 'object' || !('isCaptain' in decoded) || !(decoded as any).isCaptain) {
-            res.status(403).json({ error: 'Not authorized to submit updates' });
-            return;
-        }
+        console.log('✅ Token verified:', decoded);
         req.captain = decoded;
         next();
-    } catch (error) {
+    } catch (error: any) {
+        console.log('❌ Token verification failed:', error.message);
         res.status(401).json({ error: 'Invalid authentication token' });
-        return;
     }
 };
 
+// Login route
 router.post('/login', async (req: express.Request, res: express.Response) => {
     try {
         const { username, password } = req.body;
@@ -52,17 +68,38 @@ router.post('/login', async (req: express.Request, res: express.Response) => {
     }
 });
 
+// Status update route
 router.post('/status', 
     updateRateLimiter,
     authenticateCaptain,
     async (req: express.Request, res: express.Response) => {
         try {
-            // Handle ferry status update logic here
-            res.status(200).json({ message: 'Status updated successfully' });
+            const { ferryId, status, crowdLevel } = req.body;
+            // Add your status update logic here
+            res.json({ message: 'Status updated successfully' });
         } catch (error) {
             res.status(500).json({ error: 'Failed to update status' });
         }
     }
 );
+
+// Debug status update route (temporary)
+router.post('/debug/status', async (req: express.Request, res: express.Response) => {
+    try {
+        const { ferryId, status, crowdLevel } = req.body;
+        console.log('Received status update:', { ferryId, status, crowdLevel });
+        
+        // TODO: Add your actual status update logic here
+        
+        res.json({ 
+            message: 'Status updated successfully',
+            debug: true,
+            received: { ferryId, status, crowdLevel }
+        });
+    } catch (error) {
+        console.error('Debug route error:', error);
+        res.status(500).json({ error: 'Failed to update status' });
+    }
+});
 
 export default router;

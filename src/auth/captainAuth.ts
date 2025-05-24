@@ -8,32 +8,32 @@ interface Captain {
     ferryId: string;
 }
 
-// This would typically come from a database
+// Temporary captain data (replace with database in production)
 const captains: Captain[] = [
     {
         id: '1',
         username: 'likoni_captain',
         // This is a hashed version of 'password123'
-        password: '$2b$10$YourHashedPasswordHere',
+        password: '$2b$10$w1Z2D0J4iX7CG61HI9RWMuUPpXyONFuuRmkUvXvde7ToyZOIlMHRq',
         ferryId: 'likoni'
-    },
-    {
-        id: '2',
-        username: 'mtongwe_captain',
-        password: '$2b$10$YourHashedPasswordHere',
-        ferryId: 'mtongwe'
     }
 ];
 
 export const loginCaptain = async (username: string, password: string) => {
+    console.log('Login attempt for username:', username);
+    
     const captain = captains.find(c => c.username === username);
     
     if (!captain) {
+        console.log('❌ Captain not found:', username);
         throw new Error('Captain not found');
     }
 
     const validPassword = await bcrypt.compare(password, captain.password);
+    console.log('Password validation result:', validPassword);
+
     if (!validPassword) {
+        console.log('❌ Invalid password for:', username);
         throw new Error('Invalid password');
     }
 
@@ -48,5 +48,6 @@ export const loginCaptain = async (username: string, password: string) => {
         { expiresIn: '8h' }
     );
 
+    console.log('✅ Login successful for:', username);
     return token;
 };

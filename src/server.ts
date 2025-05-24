@@ -1,14 +1,27 @@
 import express from 'express';
 import ferryRoutes from './routes/ferry.js';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+if (!process.env.JWT_SECRET) {
+    console.error('❌ JWT_SECRET is not set in environment variables!');
+    process.exit(1);
+}
+
+console.log('✅ JWT_SECRET is set with length:', process.env.JWT_SECRET.length);
+
 const app = express();
 
-// Add these middleware before your routes
+// Important: These must come before routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+});
 
 app.use('/api/ferry', ferryRoutes);
 
