@@ -43,4 +43,4 @@ ferrygo/
 ```
 
 ---
-Built for #1MillionDevs Hackathon | Live Demo
+Built for #1MillionDevs Hackathon 
