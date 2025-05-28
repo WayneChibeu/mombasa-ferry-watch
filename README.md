@@ -38,10 +38,15 @@ echo "SUPABASE_URL=your_url" >> .env
 
 # 3. Deploy
 python app.py
+
 📌 Core Files
+
+---
 ferrygo/
 ├── app.py               # Twilio webhook handler
 ├── claude_prompts/      # AI classification rules
 ├── supabase/            # DB schemas
 └── tests/               # Load-testing scripts
+---
+
 Built for #1MillionDevs Hackathon | Live Demo
