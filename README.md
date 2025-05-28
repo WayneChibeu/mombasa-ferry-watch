@@ -2,8 +2,6 @@
 
 **Real-time SMS system** reducing Mombasa ferry wait times by 40% through crowd-sourced intelligence.
 
-![System Architecture](https://i.imgur.com/JfQq3Vp.png)
-
 ## 🚀 Key Features
 - **Breakdown Detection**  
   ```python
@@ -41,12 +39,16 @@ python app.py
 
 📌 Core Files
 
----
+## Project Structure
+
+```
+.
 ferrygo/
 ├── app.py               # Twilio webhook handler
 ├── claude_prompts/      # AI classification rules
 ├── supabase/            # DB schemas
 └── tests/               # Load-testing scripts
----
+```
 
+---
 Built for #1MillionDevs Hackathon | Live Demo
